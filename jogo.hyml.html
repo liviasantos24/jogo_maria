@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jogo Pixel </title>
+  <style>
+    body {
+      margin: 0;
+      background: #eee;
+      display: flex;
+      justify-content: center;
+    }
+    canvas {
+      background: #fff;
+      border: 2px solid #000;
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 600;
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    const player = {
+      x: 200,
+      y: 550,
+      width: 30,
+      height: 30,
+      color: 'blue',
+      speed: 5
+    };
+
+    let keys = {};
+
+    const items = [];
+    const itemSize = 20;
+    let score = 0;
+
+    function spawnItem() {
+      const x = Math.random() * (canvas.width - itemSize);
+      items.push({ x, y: 0, width: itemSize, height: itemSize, color: 'green' });
+    }
+
+    function drawRect(obj) {
+      ctx.fillStyle = obj.color;
+      ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+    }
+
+    function update() {
+      if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+      if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
+
+      for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        item.y += 3;
+
+        if (
+          item.x < player.x + player.width &&
+          item.x + item.width > player.x &&
+          item.y < player.y + player.height &&
+          item.y + item.height > player.y
+        ) {
+          items.splice(i, 1);
+          score++;
+        } else if (item.y > canvas.height) {
+          items.splice(i, 1);
+        }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawRect(player);
+      items.forEach(drawRect);
+
+      ctx.fillStyle = 'black';
+      ctx.font = '20px Arial';
+      ctx.fillText(`Score: ${score}`, 10, 30);
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    setInterval(spawnItem, 1000);
+    loop();
+
+    window.addEventListener('keydown', (e) => {
+      keys[e.key] = true;
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keys[e.key] = false;
+    });
+  </script>
+</body>
+</html>
